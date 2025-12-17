@@ -1,0 +1,11 @@
+{
+  "name": "speakable-tts",
+  "version": "1.0.0",
+  "description": "Text-to-speech hook that reads Claude's responses aloud via the audio server",
+  "author": {
+    "name": "Tom Whiting",
+    "url": "https://github.com/tomWhiting"
+  },
+  "keywords": ["tts", "speech", "audio", "accessibility"],
+  "hooks": "./hooks/hooks.json"
+}
