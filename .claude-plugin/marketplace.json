@@ -13,6 +13,11 @@
         "repo": "tomWhiting/forky"
       },
       "description": "Fork Claude sessions to handle side tasks in parallel"
+    },
+    {
+      "name": "session-tracker",
+      "source": "./session-tracker",
+      "description": "Track Claude sessions with auto-generated names in MODLR database"
     }
   ]
 }

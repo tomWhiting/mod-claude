@@ -1,0 +1,11 @@
+{
+  "name": "session-tracker",
+  "version": "1.0.0",
+  "description": "Track Claude sessions with auto-generated names, stored in MODLR database",
+  "author": {
+    "name": "Tom Whiting",
+    "url": "https://github.com/tomWhiting"
+  },
+  "keywords": ["session", "tracking", "modlr", "duckdb"],
+  "hooks": "./hooks/hooks.json"
+}
