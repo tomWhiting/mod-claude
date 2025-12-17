@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["duckdb"]
+# dependencies = []
 # ///
 """
 SessionStart hook: session-tracker
@@ -9,8 +9,7 @@ Captures session info, generates/retrieves session name, and stores in MODLR dat
 
 Fires on: startup, resume, clear, compact
 
-Database: ~/.modlr/modlr.db (DuckDB)
-Table: sessions
+Uses: Modlr HTTP API at http://localhost:3456/api/sessions
 """
 
 import json
@@ -19,8 +18,8 @@ import random
 import sys
 from datetime import datetime
 from pathlib import Path
-
-import duckdb
+from urllib.request import urlopen, Request
+from urllib.error import URLError, HTTPError
 
 # === Name Generation Lists ===
 # First names can be simple names, full names with titles, or elaborate phrases
@@ -173,8 +172,8 @@ SECOND_PARTS = {
     ],
 }
 
-# Default database path
-MODLR_DB_PATH = Path.home() / ".modlr" / "modlr.db"
+# Modlr API URL
+MODLR_API_URL = os.environ.get("MODLR_API_URL", "http://localhost:3456")
 
 
 def generate_random_name() -> tuple[str, str]:
@@ -189,75 +188,81 @@ def generate_random_name() -> tuple[str, str]:
     return first, full_name
 
 
-def ensure_sessions_table(conn: duckdb.DuckDBPyConnection) -> None:
-    """Create the sessions table if it doesn't exist."""
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS sessions (
-            session_id VARCHAR PRIMARY KEY,
-            cwd VARCHAR,
-            transcript_path VARCHAR,
-            nickname VARCHAR,
-            persona_prompt VARCHAR,
-            voice VARCHAR,
-            engine VARCHAR,
-            hidden BOOLEAN DEFAULT false,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+def get_session_from_api(session_id: str) -> dict | None:
+    """Get a session from the Modlr API."""
+    try:
+        url = f"{MODLR_API_URL}/api/sessions/{session_id}"
+        req = Request(url, method="GET")
+        req.add_header("Content-Type", "application/json")
+
+        with urlopen(req, timeout=5) as response:
+            if response.status == 200:
+                return json.loads(response.read().decode("utf-8"))
+    except HTTPError as e:
+        if e.code == 404:
+            return None
+        # Other HTTP errors - return None and fall back to name generation
+        return None
+    except (URLError, TimeoutError, OSError):
+        # Network errors - return None and fall back to name generation
+        return None
+    return None
+
+
+def create_session_via_api(
+    session_id: str,
+    cwd: str,
+    transcript_path: str,
+    nickname: str,
+) -> bool:
+    """Create a session via the Modlr API. Returns True on success."""
+    try:
+        url = f"{MODLR_API_URL}/api/sessions"
+        payload = json.dumps({
+            "sessionId": session_id,
+            "cwd": cwd,
+            "transcriptPath": transcript_path,
+            "nickname": nickname,
+            "hidden": False,
+        }).encode("utf-8")
+
+        req = Request(url, data=payload, method="POST")
+        req.add_header("Content-Type", "application/json")
+
+        with urlopen(req, timeout=5) as response:
+            return response.status in (200, 201)
+    except (URLError, HTTPError, TimeoutError, OSError):
+        return False
 
 
 def get_or_create_session(
     session_id: str,
     cwd: str,
     transcript_path: str,
-    db_path: Path = MODLR_DB_PATH,
 ) -> tuple[str, str]:
     """
-    Get existing session or create a new one.
+    Get existing session or create a new one via Modlr API.
     Returns (nickname, full_generated_name) tuple.
     """
-    try:
-        # Ensure directory exists
-        db_path.parent.mkdir(parents=True, exist_ok=True)
+    # Try to get existing session from API
+    session = get_session_from_api(session_id)
 
-        conn = duckdb.connect(str(db_path))
-        ensure_sessions_table(conn)
-
-        # Check for existing session
-        result = conn.execute(
-            "SELECT nickname FROM sessions WHERE session_id = ?", [session_id]
-        ).fetchone()
-
-        if result:
-            # Session exists - generate a display name but don't modify DB
-            nickname = result[0]
-            _, full_name = generate_random_name()  # Just for display variety
-            conn.close()
-            # If nickname is set, use it; otherwise generate fresh
-            if nickname:
-                return nickname, f"{nickname} (resumed)"
-            # No nickname stored, generate new one
-            first, full_name = generate_random_name()
-            return first, full_name
-
-        # New session - generate name and store
-        first, full_name = generate_random_name()
-
-        conn.execute(
-            """
-            INSERT INTO sessions (session_id, cwd, transcript_path, nickname, hidden)
-            VALUES (?, ?, ?, ?, false)
-            """,
-            [session_id, cwd, transcript_path, first],
-        )
-        conn.close()
-
-        return first, full_name
-
-    except Exception as e:
-        # If DB fails, generate a name but don't store it
+    if session:
+        # Session exists
+        nickname = session.get("nickname")
+        if nickname:
+            return nickname, f"{nickname} (resumed)"
+        # No nickname stored, generate new one
         first, full_name = generate_random_name()
         return first, full_name
+
+    # New session - generate name and store via API
+    first, full_name = generate_random_name()
+
+    # Try to create via API (fire-and-forget, don't fail if API is down)
+    create_session_via_api(session_id, cwd, transcript_path, first)
+
+    return first, full_name
 
 
 def main():
