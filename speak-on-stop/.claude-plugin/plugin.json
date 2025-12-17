@@ -1,0 +1,11 @@
+{
+  "name": "speak-on-stop",
+  "version": "1.0.0",
+  "description": "Text-to-speech that reads Claude's last response aloud when it stops",
+  "author": {
+    "name": "Tom Whiting",
+    "url": "https://github.com/tomWhiting"
+  },
+  "keywords": ["tts", "speech", "audio", "accessibility"],
+  "hooks": "./hooks/hooks.json"
+}

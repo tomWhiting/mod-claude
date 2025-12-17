@@ -1,0 +1,11 @@
+{
+  "name": "speak-on-stop-with-context",
+  "version": "1.0.0",
+  "description": "Text-to-speech with conversation context for better humanization",
+  "author": {
+    "name": "Tom Whiting",
+    "url": "https://github.com/tomWhiting"
+  },
+  "keywords": ["tts", "speech", "audio", "accessibility", "context"],
+  "hooks": "./hooks/hooks.json"
+}

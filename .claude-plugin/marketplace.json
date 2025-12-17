@@ -20,9 +20,14 @@
       "description": "Track Claude sessions with auto-generated names in MODLR database"
     },
     {
-      "name": "speakable-tts",
-      "source": "./speakable-tts",
-      "description": "Text-to-speech hook that reads Claude responses aloud"
+      "name": "speak-on-stop",
+      "source": "./speak-on-stop",
+      "description": "Text-to-speech that reads Claude's last response aloud"
+    },
+    {
+      "name": "speak-on-stop-with-context",
+      "source": "./speak-on-stop-with-context",
+      "description": "Text-to-speech with conversation context for better humanization"
     }
   ]
 }

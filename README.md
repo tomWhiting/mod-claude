@@ -37,17 +37,20 @@ Fork Claude sessions to handle side tasks in parallel. Spawn background Claude i
 /forky -m haiku "Quick task for lighter model"
 ```
 
-### speakable-tts
+### speak-on-stop
 
-Text-to-speech hook that reads Claude's responses aloud. Requires the audio server to be running.
-
-**Features:**
-- Reads last assistant message from transcript
-- Sends to speakable API for humanization and TTS
-- Fires on Stop hook (when Claude finishes responding)
+Text-to-speech that reads Claude's last response aloud. Requires the audio server to be running.
 
 ```bash
-/plugin install speakable-tts@mod-claude
+/plugin install speak-on-stop@mod-claude
+```
+
+### speak-on-stop-with-context
+
+Text-to-speech with conversation context (last 4 messages) for better humanization. Use this for more natural-sounding speech.
+
+```bash
+/plugin install speak-on-stop-with-context@mod-claude
 ```
 
 ## Development
