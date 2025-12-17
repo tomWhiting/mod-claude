@@ -18,6 +18,11 @@
       "name": "session-tracker",
       "source": "./session-tracker",
       "description": "Track Claude sessions with auto-generated names in MODLR database"
+    },
+    {
+      "name": "speakable-tts",
+      "source": "./speakable-tts",
+      "description": "Text-to-speech hook that reads Claude responses aloud"
     }
   ]
 }
