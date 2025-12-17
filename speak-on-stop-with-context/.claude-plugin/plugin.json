@@ -6,6 +6,5 @@
     "name": "Tom Whiting",
     "url": "https://github.com/tomWhiting"
   },
-  "keywords": ["tts", "speech", "audio", "accessibility", "context"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["tts", "speech", "audio", "accessibility", "context"]
 }
