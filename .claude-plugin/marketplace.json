@@ -1,0 +1,18 @@
+{
+  "name": "mod-claude",
+  "owner": {
+    "name": "Tom Whiting",
+    "url": "https://github.com/tomWhiting"
+  },
+  "description": "Claude Code plugins for session forking, hooks, and productivity tools",
+  "plugins": [
+    {
+      "name": "forky",
+      "source": {
+        "source": "github",
+        "repo": "tomWhiting/forky"
+      },
+      "description": "Fork Claude sessions to handle side tasks in parallel"
+    }
+  ]
+}
